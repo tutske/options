@@ -5,6 +5,9 @@ plugins {
 group = 'org.tutske.libs'
 
 dependencies {
+	compile (
+		[ group: 'org.tutske.libs', name: 'ts-libs-utils', version: '[a.1,)' ]
+	)
 	testCompile (
 		[ group: 'junit', name: 'junit', version: '[1,)' ],
 		[ group: 'org.hamcrest', name: 'hamcrest-all', version: '[1,)' ],
