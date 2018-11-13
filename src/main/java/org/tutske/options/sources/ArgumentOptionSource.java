@@ -13,19 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-public class ArgumentOptionSource implements OptionSource {
-
-	private final Map<OptionConsumer, List<Option>> listeners = new HashMap<> ();
-
-	@Override
-	public void subscribe (List<Option> options, OptionConsumer consumer) {
-		listeners.put (consumer, options);
-	}
-
-	@Override
-	public void unsubscribe (List<Option> options, OptionConsumer consumer) {
-		listeners.remove (consumer);
-	}
+public class ArgumentOptionSource extends BaseOptionSource implements OptionSource {
 
 	public void consume (String [] args) {
 		for ( Map.Entry<OptionConsumer, List<Option>> entry : listeners.entrySet () ) {
