@@ -8,19 +8,13 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.options.Option;
 import org.tutske.options.Option.*;
-import org.tutske.options.OptionConsumer;
-import org.tutske.options.OptionSource;
 import org.tutske.options.OptionStore;
 import org.tutske.options.OptionStoreFactory;
+import org.tutske.options.SimpleOptionSource;
 import org.tutske.options.StoreChangeConsumer;
-import org.tutske.utils.Exceptions;
-import org.tutske.utils.functions.RiskyConsumer;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
 
 
 public class OptionStoreTest {
@@ -224,28 +218,4 @@ public class OptionStoreTest {
 		verify (second, timeout (1000)).onValue (9);
 	}
 
-	private static class SimpleOptionSource implements OptionSource {
-		private final Consumer<OptionConsumer> populator;
-		private final Set<OptionConsumer> consumers = new HashSet<> ();
-
-		private SimpleOptionSource (RiskyConsumer<OptionConsumer> populator) {
-			this.populator = populator;
-		}
-
-		public <T> void source (Option<T> option, T ... values) {
-			for ( OptionConsumer consumer : consumers ) {
-				try { consumer.accept (option, Arrays.asList (values)); }
-				catch ( Exception e ) { throw Exceptions.wrap (e); }
-			}
-		}
-
-		@Override public void subscribe (List<Option> options, OptionConsumer consumer) {
-			this.consumers.add (consumer);
-			populator.accept (consumer);
-		}
-
-		@Override public void unsubscribe (List<Option> options, OptionConsumer consumer) {
-			this.consumers.remove (consumer);
-		}
-	}
 }
