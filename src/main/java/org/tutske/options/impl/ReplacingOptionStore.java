@@ -6,7 +6,7 @@ import org.tutske.options.OptionSource;
 import org.tutske.options.OptionStore;
 import org.tutske.options.StoreChangeConsumer;
 import org.tutske.options.UnknownOptionException;
-import org.tutske.utils.Exceptions;
+import org.tutske.lib.utils.Exceptions;
 
 import java.util.Collections;
 import java.util.HashMap;

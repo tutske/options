@@ -1,7 +1,7 @@
 package org.tutske.options;
 
-import org.tutske.utils.Exceptions;
-import org.tutske.utils.functions.RiskyConsumer;
+import org.tutske.lib.utils.Exceptions;
+import org.tutske.lib.utils.Functions.RiskyConsumer;
 
 import java.util.Arrays;
 import java.util.HashSet;

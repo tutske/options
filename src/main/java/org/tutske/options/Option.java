@@ -1,6 +1,6 @@
 package org.tutske.options;
 
-import org.tutske.utils.PrimitivesParser;
+import org.tutske.lib.utils.PrimitivesParser;
 
 import java.net.URI;
 import java.nio.file.Path;

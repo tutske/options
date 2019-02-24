@@ -3,8 +3,8 @@ package org.tutske.options.sources;
 import org.tutske.options.Option;
 import org.tutske.options.OptionConsumer;
 import org.tutske.options.OptionSource;
-import org.tutske.utils.Exceptions;
-import org.tutske.utils.Resource;
+import org.tutske.lib.utils.Exceptions;
+import org.tutske.lib.utils.Resource;
 
 import java.io.File;
 import java.io.InputStream;

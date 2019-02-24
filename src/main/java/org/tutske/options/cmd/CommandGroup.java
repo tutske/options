@@ -6,7 +6,7 @@ import org.tutske.options.OptionStore;
 import org.tutske.options.OptionStoreFactory;
 import org.tutske.options.sources.ArgumentOptionSource;
 import org.tutske.options.sources.DefaultsOptionSource;
-import org.tutske.utils.Exceptions;
+import org.tutske.lib.utils.Exceptions;
 
 import java.util.Collections;
 import java.util.HashMap;
