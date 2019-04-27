@@ -1,5 +1,5 @@
 plugins {
-	id "org.tutske.gradle" version 'a.2.0'
+	id "org.tutske.gradle" version 'a.2.2'
 }
 
 group = 'org.tutske.libs'
@@ -9,7 +9,7 @@ targetCompatibility = '11'
 
 dependencies {
 	implementation (
-		[ group: 'org.tutske.libs', name: 'org.tutske.lib.utils', version: '[a.1,)' ]
+		[ group: 'org.tutske.libs', name: 'org.tutske.libs.utils', version: '[a.3,)' ]
 	)
 	testCompile (
 		[ group: 'junit', name: 'junit', version: '[1,)' ],
