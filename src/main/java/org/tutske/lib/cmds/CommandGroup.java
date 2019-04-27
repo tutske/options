@@ -1,4 +1,4 @@
-package org.tutske.lib.options.cmd;
+package org.tutske.lib.cmds;
 
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionSource;

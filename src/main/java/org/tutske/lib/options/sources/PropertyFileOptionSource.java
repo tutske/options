@@ -3,6 +3,7 @@ package org.tutske.lib.options.sources;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
 import org.tutske.lib.options.OptionSource;
+import org.tutske.lib.options.impl.BaseOptionSource;
 import org.tutske.lib.utils.Exceptions;
 import org.tutske.lib.utils.Resource;
 

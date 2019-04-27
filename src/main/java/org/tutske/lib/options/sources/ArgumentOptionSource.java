@@ -4,6 +4,7 @@ import org.tutske.lib.options.Option;
 import org.tutske.lib.options.Option.*;
 import org.tutske.lib.options.OptionConsumer;
 import org.tutske.lib.options.OptionSource;
+import org.tutske.lib.options.impl.BaseOptionSource;
 import org.tutske.lib.utils.Exceptions;
 
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package org.tutske.lib.options.cmd;
+package org.tutske.lib.cmds;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;

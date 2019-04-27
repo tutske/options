@@ -1,4 +1,4 @@
-package org.tutske.lib.options.sources;
+package org.tutske.lib.options.impl;
 
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;

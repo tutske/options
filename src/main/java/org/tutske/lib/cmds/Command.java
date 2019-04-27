@@ -1,4 +1,4 @@
-package org.tutske.lib.options.cmd;
+package org.tutske.lib.cmds;
 
 import java.util.HashMap;
 import java.util.Map;
