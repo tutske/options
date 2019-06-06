@@ -151,7 +151,6 @@ public class CommandGroup {
 	private void execute (Command command, CommandStore cmds, String [] tail) {
 		CommandConfig cfg = configs.get (command);
 		while ( cfg != null && cfg.fn == null && cfg.parent != null ) {
-			System.out.println ("Checking parent " + cfg.current);
 			cfg = configs.get (cfg.parent);
 		}
 

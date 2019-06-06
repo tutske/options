@@ -278,4 +278,40 @@ public class CommandGroupTest {
 		assertThat (captor.getValue ().get (Command.get ("run"), db), is ("mysql://sub.domain.org/names"));
 	}
 
+	@Test
+	public void it_should_not_need_explicit_register_of_sub_commands () throws Exception {
+		Command top = Command.create ("top");
+		Command middle = Command.create ("middle");
+		Command leaf = Command.create ("leaf");
+
+		store.register (top, config -> config.subCommand (middle));
+		store.register (middle, config -> config.subCommand (leaf));
+		store.configure (Command.GLOBAL).fn (fn);
+
+		store.run (new String [] { "top", "middle", "leaf" });
+
+		ArgumentCaptor<CommandStore> captor = ArgumentCaptor.forClass (CommandStore.class);
+		verify (fn).run (eq (leaf), captor.capture (), any ());
+		assertThat (captor.getValue ().commands (), contains (Command.GLOBAL, top, middle, leaf));
+	}
+
+	@Test
+	public void it_should_not_allow_running_a_sub_command_directly () throws Exception {
+		Command top = Command.create ("top");
+		Command middle = Command.create ("middle");
+		Command leaf = Command.create ("leaf");
+
+		store.register (top, config -> config.subCommand (middle));
+		store.register (middle, config -> config.subCommand (leaf));
+		store.register (leaf);
+
+		store.configure (Command.GLOBAL).fn (fn);
+
+		store.run (new String [] { "middle", "leaf" });
+
+		ArgumentCaptor<CommandStore> captor = ArgumentCaptor.forClass (CommandStore.class);
+		verify (fn).run (eq (Command.GLOBAL), captor.capture (), argThat (arrayContaining ("middle", "leaf")));
+		assertThat (captor.getValue ().commands (), contains (Command.GLOBAL));
+	}
+
 }
