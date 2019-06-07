@@ -124,7 +124,7 @@ public abstract class Option<T> {
 			super (name, fallback, PrimitivesParser.getParser (String.class, Path.class));
 		}
 		public PathOption (String name, String fallback) {
-			this (name, Paths.get (fallback));
+			this (name, PrimitivesParser.parse (fallback, Path.class));
 		}
 		public PathOption (String name) {
 			this (name, (Path) null);
