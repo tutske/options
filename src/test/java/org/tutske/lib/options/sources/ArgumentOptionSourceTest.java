@@ -1,7 +1,7 @@
 package org.tutske.lib.options.sources;
 
-import static org.junit.Assert.assertThat;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 

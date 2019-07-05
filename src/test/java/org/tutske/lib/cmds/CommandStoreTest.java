@@ -1,7 +1,7 @@
 package org.tutske.lib.cmds;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.tutske.lib.options.Option.*;
 import static org.tutske.lib.options.SimpleOptionSource.source;
 
