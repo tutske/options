@@ -314,4 +314,46 @@ public class CommandGroupTest {
 		assertThat (captor.getValue ().commands (), contains (Command.GLOBAL));
 	}
 
+	@Test
+	public void it_should_find_options_from_higher_commands () throws Exception {
+		Option<String> key = new Option.StringOption ("key");
+
+		Command top = Command.create ("top");
+		Command middle = Command.create ("middle");
+		Command leaf = Command.create ("leaf");
+
+		store.register (top, config -> config.subCommand (middle).registerOptions (key));
+		store.register (middle, config -> config.subCommand (leaf));
+		store.register (leaf);
+
+		store.configure (Command.GLOBAL).fn (fn);
+
+		store.run (new String [] { "top", "--key=value", "middle", "leaf" });
+
+		ArgumentCaptor<CommandStore> captor = ArgumentCaptor.forClass (CommandStore.class);
+		verify (fn).run (eq (leaf), captor.capture (), any ());
+		assertThat (captor.getValue ().find (key), is ("value"));
+	}
+
+	@Test
+	public void it_should_find_options_from_higher_commands_that_do_full_scans () throws Exception {
+		Option<String> key = new Option.StringOption ("key");
+
+		Command top = Command.create ("top");
+		Command middle = Command.create ("middle");
+		Command leaf = Command.create ("leaf");
+
+		store.register (top, config -> config.subCommand (middle).registerOptions (key).fullScan (true));
+		store.register (middle, config -> config.subCommand (leaf));
+		store.register (leaf);
+
+		store.configure (Command.GLOBAL).fn (fn);
+
+		store.run (new String [] { "top", "middle", "leaf", "--key=value" });
+
+		ArgumentCaptor<CommandStore> captor = ArgumentCaptor.forClass (CommandStore.class);
+		verify (fn).run (eq (leaf), captor.capture (), any ());
+		assertThat (captor.getValue ().find (key), is ("value"));
+	}
+
 }
