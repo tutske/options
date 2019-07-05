@@ -1,5 +1,6 @@
 plugins {
 	id "org.tutske.gradle" version 'a.2.2'
+	id 'jacoco'
 }
 
 group = 'org.tutske.libs'
@@ -22,5 +23,13 @@ compileJava {
 	doFirst {
 		options.compilerArgs = [ '--module-path', classpath.asPath ]
 		classpath = files ()
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination file ("${buildDir}/reports/coverage")
 	}
 }
