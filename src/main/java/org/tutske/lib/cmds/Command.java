@@ -15,10 +15,12 @@ public interface Command {
 	}
 
 	public boolean matches (String name);
+	public String representation ();
 
 	static final Command GLOBAL = new Command () {
 		@Override public String toString () { return "<GlobalCommand />"; }
 		@Override public boolean matches (String name) { return false; }
+		@Override public String representation () { return ""; }
 	};
 
 	static class SimpleCommand implements Command {
@@ -30,6 +32,7 @@ public interface Command {
 
 		@Override public String toString () { return String.format ("<SimpleCommand: %s />", name); }
 		@Override public boolean matches (String name) { return this.name.equals (name); }
+		@Override public String representation () { return name; }
 	}
 
 }
