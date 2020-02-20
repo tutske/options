@@ -52,6 +52,10 @@ public class PropertyFileOptionSource extends BaseOptionSource implements Option
 			for ( Option option : entry.getValue () ) {
 				String value = properties.getProperty (canonicalName (option));
 				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", "_")); }
+				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", "-")); }
+				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", ".")); }
+				if ( value == null ) { value = properties.getProperty (option.getName ()); }
+
 				if ( value == null ) { continue; }
 
 				try { entry.getKey ().accept (option, values (option, value)); }
