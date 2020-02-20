@@ -9,6 +9,7 @@ public interface OptionStore {
 
 	public List<Option<?>> options ();
 
+	public boolean knows (Option<?> option);
 	public boolean has (Option<?> option);
 	public <T> T get (Option<T> option);
 	public <T> List<T> getAll (Option<T> option);

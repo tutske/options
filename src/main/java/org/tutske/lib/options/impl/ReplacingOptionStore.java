@@ -75,6 +75,11 @@ public class ReplacingOptionStore implements OptionStore {
 	}
 
 	@Override
+	public boolean knows (Option<?> option) {
+		return options.contains (option);
+	}
+
+	@Override
 	public boolean has (Option<?> option) {
 		return bag.containsKey (option);
 	}

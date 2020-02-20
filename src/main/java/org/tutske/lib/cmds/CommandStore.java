@@ -87,7 +87,7 @@ public class CommandStore {
 
 	private OptionStore findStore (Option option) {
 		for ( OptionStore store : stores.values () ) {
-			if ( store.has (option) ) {
+			if ( store.knows (option) ) {
 				return store;
 			}
 		}
