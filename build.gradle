@@ -1,16 +1,35 @@
 plugins {
-	id "org.tutske.gradle" version 'a.1.1'
+	id "org.tutske.gradle" version 'a.2.2'
+	id 'jacoco'
 }
 
 group = 'org.tutske.libs'
 
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
 dependencies {
-	compile (
-		[ group: 'org.tutske.libs', name: 'ts-libs-utils', version: '[a.1,)' ]
+	implementation (
+		[ group: 'org.tutske.libs', name: 'org.tutske.libs.utils', version: '[a.3,)' ]
 	)
 	testCompile (
 		[ group: 'junit', name: 'junit', version: '[1,)' ],
 		[ group: 'org.hamcrest', name: 'hamcrest-all', version: '[1,)' ],
 		[ group: 'org.mockito', name: 'mockito-all', version: '[1,)' ]
 	)
+}
+
+compileJava {
+	doFirst {
+		options.compilerArgs = [ '--module-path', classpath.asPath ]
+		classpath = files ()
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.enabled false
+		csv.enabled false
+		html.destination file ("${buildDir}/reports/coverage")
+	}
 }

@@ -1,5 +1,4 @@
 pluginManagement.repositories {
 	maven { url ('http://nexus.tutske.org:10080/repository/maven-public/') }
-	maven { url (System.getProperty ("user.home") + '/.m2/repository') }
 }
-rootProject.name = 'ts-libs-options'
+rootProject.name = 'org.tutske.libs.options'
