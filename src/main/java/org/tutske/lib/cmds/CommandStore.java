@@ -1,7 +1,10 @@
 package org.tutske.lib.cmds;
 
+import org.tutske.lib.options.DynamicOption;
 import org.tutske.lib.options.Option;
+import org.tutske.lib.options.OptionSource;
 import org.tutske.lib.options.OptionStore;
+import org.tutske.lib.options.StoreChangeConsumer;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -10,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class CommandStore {
+public class CommandStore implements OptionStore {
 
 	private final Map<Command, OptionStore> stores = new LinkedHashMap<> ();
 	private Command main;
@@ -40,6 +43,11 @@ public class CommandStore {
 		return new LinkedList<> (stores.keySet ());
 	}
 
+	@Override
+	public void bind (OptionSource source) {
+		stores.get (main).bind (source);
+	}
+
 	public List<Option<?>> options () {
 		List<Option<?>> options = new LinkedList<> ();
 		for ( OptionStore store : stores.values () ) {
@@ -52,6 +60,7 @@ public class CommandStore {
 		return stores.containsKey (command) ? stores.get (command).options () : Collections.emptyList ();
 	}
 
+	@Override
 	public <T> T get (Option<T> option) {
 		return get (main, option);
 	}
@@ -76,6 +85,17 @@ public class CommandStore {
 		return findStore (option).getAll (option);
 	}
 
+	@Override
+	public boolean knows (Option<?> option) {
+		for ( OptionStore store : stores.values () ) {
+			if ( store.knows (option) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
 	public boolean has (Option<?> option) {
 		for ( OptionStore store : stores.values () ) {
 			if ( store.has (option) ) {
@@ -83,6 +103,26 @@ public class CommandStore {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public <T> void onChange (Option<T> option, StoreChangeConsumer<T> consumer) {
+		findStore (option).onChange (option, consumer);
+	}
+
+	@Override
+	public <T> void onChanges (Option<T> option, StoreChangeConsumer.Multi<T> consumer) {
+		findStore (option).onChanges (option, consumer);
+	}
+
+	@Override
+	public <T> DynamicOption<T> dynamic (Option<T> option) {
+		return findStore (option).dynamic (option);
+	}
+
+	@Override
+	public <T> DynamicOption.Value<T> dynamicValue (Option<T> option) {
+		return findStore (option).dynamicValue (option);
 	}
 
 	private OptionStore findStore (Option option) {
