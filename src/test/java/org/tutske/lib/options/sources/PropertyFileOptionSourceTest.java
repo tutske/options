@@ -121,6 +121,24 @@ public class PropertyFileOptionSourceTest {
 	}
 
 	@Test
+	public void it_should_still_notify_when_unsubscribing_non_existent_subscription () throws Exception {
+		Option<String> firstname = new Option.StringOption ("first name");
+		Option<String> lastname = new Option.StringOption ("last name");
+		source.subscribe (Utils.options (firstname, lastname), consumer);
+		source.unsubscribe (Utils.options (firstname, lastname), mock (OptionConsumer.class));
+
+		source.consume (stream (
+			"FIRST_NAME = John",
+			"LAST_NAME = Doe"
+		));
+
+		ArgumentCaptor<List> captor = ArgumentCaptor.forClass (List.class);
+		verify (consumer).accept (eq (firstname), captor.capture ());
+
+		assertThat (captor.getValue ().get (0), is ("John"));
+	}
+
+	@Test
 	public void it_should_not_notify_only_of_still_subscribed_options () throws Exception {
 		Option<String> firstname = new Option.StringOption ("first name");
 		Option<String> lastname = new Option.StringOption ("last name");

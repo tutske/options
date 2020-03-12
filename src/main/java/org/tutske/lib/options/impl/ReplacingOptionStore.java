@@ -8,6 +8,7 @@ import org.tutske.lib.options.UnknownOptionException;
 import org.tutske.lib.options.OptionStore;
 import org.tutske.lib.utils.Exceptions;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,12 +29,11 @@ public class ReplacingOptionStore implements OptionStore {
 	private final OptionBag bag = new OptionBag ();
 
 	public ReplacingOptionStore (Option ... options) {
-		this (Executors.newSingleThreadExecutor (), options);
+		this (Arrays.asList (options));
 	}
 
 	public ReplacingOptionStore (ExecutorService executor, Option ... options) {
-		Collections.addAll (this.options, options);
-		this.executor = executor;
+		this (executor, Arrays.asList (options));
 	}
 
 	public ReplacingOptionStore (List<Option> options) {
