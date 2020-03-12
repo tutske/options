@@ -1,5 +1,6 @@
 package org.tutske.lib.options.sources;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -45,6 +46,24 @@ public class DefaultsOptionSourceTest {
 		Option<String> firstname = new Option.StringOption ("first name");
 		source.subscribe (options (firstname), consumer);
 		verify (consumer, times (0)).accept (any (), any ());
+	}
+
+	@Test
+	public void it_should_allow_unsubscribing () throws Exception {
+		Option<Integer> count = new Option.IntegerOption ("count", 1);
+		source.subscribe (asList (count), consumer);
+		source.unsubscribe (asList (count), consumer);
+
+		verify (consumer, times (1)).accept (eq (count), any ());
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_consumers () {
+		source.subscribe (asList (new Option.StringOption ("name", "john")), new OptionConsumer () {
+			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
+				throw new Exception ("Intentional Falure");
+			}
+		});
 	}
 
 }

@@ -97,6 +97,29 @@ public class ArgumentOptionSourceTest {
 	}
 
 	@Test
+	public void it_should_understand_negated_explicit_true_boolean_options () throws Exception {
+		source.subscribe (asList (new Option.BooleanOption ("verbose")), consumer);
+		source.consume (new String [] { "--no-verbose=true" });
+
+		ArgumentCaptor<List> captor = ArgumentCaptor.forClass (List.class);
+		verify (consumer).accept (any (), captor.capture ());
+
+		assertThat (captor.getValue ().get (0), is (false));
+	}
+
+	@Test
+	public void it_should_understand_negated_explicit_false_boolean_options () throws Exception {
+		source.subscribe (asList (new Option.BooleanOption ("verbose")), consumer);
+		source.consume (new String [] { "--no-verbose=false" });
+
+		ArgumentCaptor<List> captor = ArgumentCaptor.forClass (List.class);
+		verify (consumer).accept (any (), captor.capture ());
+
+		assertThat (captor.getValue ().get (0), is (true));
+	}
+
+
+	@Test
 	public void it_should_notify_of_multiple_values () throws Exception {
 		source.subscribe (asList (new Option.StringOption ("name")), consumer);
 		source.consume (new String [] { "--name=jhon", "--name=jane" });
@@ -133,6 +156,23 @@ public class ArgumentOptionSourceTest {
 		source.consume (new String [] { "start", "--", "--name=jhon" });
 
 		verify (consumer, times (0)).accept (any (), any ());
+	}
+
+	@Test (expected = NumberFormatException.class)
+	public void it_should_propagate_exceptions_from_parsing () {
+		source.subscribe (asList (new Option.LongOption ("age")), consumer);
+		source.consume (new String [] { "--age=abc" });
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_consumers () {
+		Option<String> name = new Option.StringOption ("name");
+		source.subscribe (asList (name), new OptionConsumer () {
+			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
+				throw new Exception ("Intentional Falure");
+			}
+		});
+		source.consume (new String [] { "--name=john"});
 	}
 
 }

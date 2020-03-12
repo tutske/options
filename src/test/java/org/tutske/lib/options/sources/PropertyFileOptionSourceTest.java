@@ -1,5 +1,6 @@
 package org.tutske.lib.options.sources;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -11,7 +12,12 @@ import org.tutske.lib.options.OptionConsumer;
 import org.tutske.lib.options.Utils;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -151,6 +157,108 @@ public class PropertyFileOptionSourceTest {
 		));
 
 		verify (consumer, times (0)).accept (eq (lastname), any ());
+		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test
+	public void it_should_not_do_anything_on_null_inputs () throws Exception {
+		source.subscribe (Utils.options (new Option.StringOption ("first name")), consumer);
+		source.consume ((InputStream) null);
+		verify (consumer, times (0)).accept (any (), any ());
+	}
+
+	@Test
+	public void it_should_not_do_anything_on_non_existing_paths () throws Exception {
+		source.subscribe (Utils.options (new Option.StringOption ("first name")), consumer);
+		source.consume (Paths.get ("does/not/exist.properties"));
+		verify (consumer, times (0)).accept (any (), any ());
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_properties_parsing () {
+		source.subscribe (Utils.options (new Option.StringOption ("first name")), consumer);
+		source.consume (new InputStream () {
+			@Override public int read () throws IOException {
+				throw new IOException ("Fail intentionally");
+			}
+		});
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_options () {
+		source.subscribe (asList (new Option.StringOption ("name")), new OptionConsumer () {
+			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
+				throw new Exception ("Intentional Falure");
+			}
+		});
+		source.consume (stream ("NAME = jhon"));
+	}
+
+	@Test
+	public void it_should_read_from_actual_file_paths () throws Exception {
+		Path path = Files.createTempFile ("example", ".properties");
+		path.toFile ().deleteOnExit ();
+
+		try ( OutputStream out = Files.newOutputStream (path) ) {
+			stream ("FIRST_NAME = john").transferTo (out);
+		}
+
+		Option<String> firstname = new Option.StringOption ("first name");
+		source.subscribe (Utils.options (firstname), consumer);
+		source.consume (path);
+		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test
+	public void it_should_read_from_actual_files () throws Exception {
+		Path path = Files.createTempFile ("example", ".properties");
+		path.toFile ().deleteOnExit ();
+
+		try ( OutputStream out = Files.newOutputStream (path) ) {
+			stream ("FIRST_NAME = john").transferTo (out);
+		}
+
+		Option<String> firstname = new Option.StringOption ("first name");
+		source.subscribe (Utils.options (firstname), consumer);
+		source.consume (path.toFile ());
+		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test
+	public void it_should_read_from_actual_files_names () throws Exception {
+		Path path = Files.createTempFile ("example", ".properties");
+		path.toFile ().deleteOnExit ();
+
+		try ( OutputStream out = Files.newOutputStream (path) ) {
+			stream ("FIRST_NAME = john").transferTo (out);
+		}
+
+		Option<String> firstname = new Option.StringOption ("first name");
+		source.subscribe (Utils.options (firstname), consumer);
+		source.consume (path.toString ());
+		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test
+	public void it_should_read_from_actual_resources () throws Exception {
+		Path path = Files.createTempFile ("example", ".properties");
+		path.toFile ().deleteOnExit ();
+
+		try ( OutputStream out = Files.newOutputStream (path) ) {
+			stream ("FIRST_NAME = john").transferTo (out);
+		}
+
+		Option<String> firstname = new Option.StringOption ("first name");
+		source.subscribe (Utils.options (firstname), consumer);
+		source.consume ("file://" + path.toString ());
+		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_failed_resource_loading () throws Exception {
+		Option<String> firstname = new Option.StringOption ("first name");
+		source.subscribe (Utils.options (firstname), consumer);
+		source.consume ("file://does-not-exist.properties");
 		verify (consumer, times (1)).accept (eq (firstname), any ());
 	}
 
