@@ -85,6 +85,19 @@ public class CommandStoreTest {
 	}
 
 	@Test
+	public void it_should_give_an_empty_option_list_when_the_command_is_not_known_by_the_store () {
+		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
+			consumer -> consumer.accept (verbose, Arrays.asList (true)))
+		));
+
+		store.addStore (Command.create ("run"), OptionStoreFactory.createNew (new Option [] { name }, source (
+			consumer -> consumer.accept (name, Arrays.asList ("John")))
+		));
+
+		assertThat (store.options (Command.get ("does-not-exist")), hasSize (0));
+	}
+
+	@Test
 	public void it_should_know_when_any_of_the_stores_has_an_option () {
 		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
 			consumer -> consumer.accept (verbose, Arrays.asList (true)))
@@ -265,6 +278,32 @@ public class CommandStoreTest {
 	public void it_should_complain_when_finding_all_values_of_an_option_that_is_not_known_by_any_associated_store () {
 		store.addStore (Command.get ("run"), OptionStoreFactory.createNew (name));
 		store.findAll (age);
+	}
+
+	@Test
+	public void it_should_know_options_of_a_command () {
+		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
+			consumer -> consumer.accept (verbose, Arrays.asList (true, false)))
+		));
+
+		store.addStore (Command.create ("run"), OptionStoreFactory.createNew (new Option [] { name }, source (
+			consumer -> consumer.accept (name, Arrays.asList ("John", "Jane")))
+		));
+
+		assertThat (store.knows (verbose), is (true));
+	}
+
+	@Test
+	public void it_should_not_know_options_not_present_in_any_of_the_commands () {
+		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
+			consumer -> consumer.accept (verbose, Arrays.asList (true, false)))
+		));
+
+		store.addStore (Command.create ("run"), OptionStoreFactory.createNew (new Option [] { name }, source (
+			consumer -> consumer.accept (name, Arrays.asList ("John", "Jane")))
+		));
+
+		assertThat (store.knows (new StringOption ("does not exist")), is (false));
 	}
 
 }

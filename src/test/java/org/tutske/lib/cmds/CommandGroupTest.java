@@ -20,10 +20,42 @@ public class CommandGroupTest {
 	@Test
 	public void it_should_recognize_a_command () throws Exception {
 		store.register ("test", config -> config.fn (fn));
-
 		store.run (new String [] { "test" });
-
 		verify (fn).run (any (), any (), any ());
+	}
+
+	@Test
+	public void it_should_recognize_an_explicit_configured_command () throws Exception {
+		store.configure ("test").fn (fn);
+		store.run (new String [] { "test" });
+		verify (fn).run (any (), any (), any ());
+	}
+
+	@Test
+	public void it_should_run_commands_directly () {
+		Option<Integer> err = new Option.IntegerOption ("err");
+
+		store.register (Command.get ("run"), cfg -> cfg
+			.options (err)
+			.fn ((cmd, opts, tail) -> opts.get (err))
+		);
+
+		int code = store.run (Command.get ("run"), new String [] { "--err=5" });
+		assertThat (code, is (5));
+	}
+
+	@Test
+	public void it_should_not_do_anything_when_running_an_unknown_command () {
+		Object result = store.run (Command.get ("does-not-exist"), new String [] {});
+		assertThat (result, nullValue ());
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_the_command_function () {
+		store.configure (Command.GLOBAL).fn ((cmd, opts, tail) -> {
+			throw new RuntimeException ("Intentionally fail");
+		});
+		store.run (new String [] {});
 	}
 
 	@Test

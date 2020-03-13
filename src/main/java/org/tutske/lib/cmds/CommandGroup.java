@@ -27,6 +27,8 @@ public class CommandGroup {
 		private Command parent;
 		private Consumer<OptionStore> storeConfig;
 		private CmdFunction fn;
+		private CmdConsumer before;
+		private CmdConsumer after;
 		private Boolean fullScan;
 
 		public CommandConfig (Command current) {
@@ -42,13 +44,26 @@ public class CommandGroup {
 			return registerOptions (options);
 		}
 
-		public CommandConfig registerFn (CmdFunction fn) {
+		public CommandConfig fn (CmdFunction fn) {
 			this.fn = fn;
 			return this;
 		}
 
-		public CommandConfig fn (CmdFunction fn) {
-			return registerFn (fn);
+		public CommandConfig handle (CmdConsumer fn) {
+			return fn ((cmd, opts, tail) -> {
+				fn.run (cmd, opts, tail);
+				return null;
+			});
+		}
+
+		public CommandConfig before (CmdConsumer fn) {
+			this.before = fn;
+			return this;
+		}
+
+		public CommandConfig after (CmdConsumer fn) {
+			this.after = fn;
+			return this;
 		}
 
 		public CommandConfig configureStore (Consumer<OptionStore> store) {
@@ -99,8 +114,19 @@ public class CommandGroup {
 		return this;
 	}
 
+	public CommandGroup registerHandle (String command, CmdConsumer fn, Consumer<CommandConfig> config) {
+		return registerHandle (Command.get (command), fn, config);
+	}
+
 	public CommandGroup register (String command, CmdFunction<?> fn, Consumer<CommandConfig> config) {
 		return register (Command.get (command), fn, config);
+	}
+
+	public CommandGroup registerHandle (Command command, CmdConsumer fn, Consumer<CommandConfig> config) {
+		register (command);
+		configs.get (command).handle (fn);
+		config.accept (configs.get (command));
+		return this;
 	}
 
 	public CommandGroup register (Command command, CmdFunction<?> fn, Consumer<CommandConfig> config) {
@@ -119,17 +145,17 @@ public class CommandGroup {
 		return configs.get (command);
 	}
 
-	public void run (String [] args) {
-		run (Command.GLOBAL, args);
+	public <T> T run (String [] args) {
+		return run (Command.GLOBAL, args);
 	}
 
-	public void run (Command command, String [] args) {
-		initialize ().internalRun (command, new CommandStore (), args);
+	public <T> T run (Command command, String [] args) {
+		return initialize ().internalRun (command, new CommandStore (), args);
 	}
 
-	private void internalRun (Command command, CommandStore cmds, String [] args) {
+	private <T> T internalRun (Command command, CommandStore cmds, String [] args) {
 		CommandConfig config = configs.get (command);
-		if ( config == null ) { return; }
+		if ( config == null ) { return null; }
 
 		ArgumentOptionSource source = new ArgumentOptionSource ();
 		OptionStore store = createStore (config, source);
@@ -144,24 +170,41 @@ public class CommandGroup {
 		if ( tail.length > 1 ) { System.arraycopy (tail, 1, remaining, 0, remaining.length); }
 
 		Command sub = findSub (config.subs, cmd);
-		if ( sub == null ) { execute (command, cmds, tail); }
-		else { internalRun (sub, cmds, remaining); }
+		if ( sub == null ) { return execute (command, cmds, tail); }
+		else { return internalRun (sub, cmds, remaining); }
 	}
 
-	private void execute (Command command, CommandStore cmds, String [] tail) {
+	private <T> T execute (Command command, CommandStore cmds, String [] tail) {
 		CommandConfig cfg = configs.get (command);
-		while ( cfg != null && cfg.fn == null && cfg.parent != null ) {
+		while ( cfg.fn == null && cfg.parent != null ) {
 			cfg = configs.get (cfg.parent);
 		}
 
-		if ( cfg == null || cfg.fn == null ) {
+		if ( cfg.fn == null ) {
 			throw new RuntimeException ("Failed to find a command function for: " + command);
 		}
 
 		cmds.setMain (command);
 
-		try { cfg.fn.run (command, cmds, tail); }
+		try { return runMethods (command, cfg, cmds, tail); }
 		catch ( Exception e ) { throw Exceptions.wrap (e); }
+	}
+
+	private <T> T runMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		runPreMethods (command, cfg, opts, tail);
+		T value = (T) cfg.fn.run (command, opts, tail);
+		runPostMethods (command, cfg, opts, tail);
+		return value;
+	}
+
+	private void runPreMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		if ( cfg.parent != null ) { runPreMethods (command, configs.get (cfg.parent), opts, tail); }
+		if ( cfg.before != null ) { cfg.before.run (command, opts, tail); }
+	}
+
+	private void runPostMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		if ( cfg.after != null ) { cfg.after.run (command, opts, tail); }
+		if ( cfg.parent != null ) { runPostMethods (command, configs.get (cfg.parent), opts, tail); }
 	}
 
 	private CommandGroup initialize () {
@@ -170,11 +213,10 @@ public class CommandGroup {
 		}
 
 		if ( configs.get (Command.GLOBAL).subs.isEmpty () ) {
-			register (Command.GLOBAL, config -> {
-				configs.values ().stream ()
-					.filter (cfg -> cfg.parent == null && cfg.current != Command.GLOBAL)
-					.forEach (cfg -> config.subCommand (cfg.current));
-			});
+			register (Command.GLOBAL, config -> configs.values ().stream ()
+				.filter (cfg -> cfg.parent == null && cfg.current != Command.GLOBAL)
+				.forEach (cfg -> config.subCommand (cfg.current))
+			);
 		}
 
 		return this;

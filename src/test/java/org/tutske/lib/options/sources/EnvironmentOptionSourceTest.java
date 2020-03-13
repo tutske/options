@@ -1,5 +1,6 @@
 package org.tutske.lib.options.sources;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
@@ -10,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -128,6 +130,17 @@ public class EnvironmentOptionSourceTest {
 
 		verify (consumer, times (0)).accept (eq (lastname), any ());
 		verify (consumer, times (1)).accept (eq (firstname), any ());
+	}
+
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_consumers () {
+		source.subscribe (asList (new Option.StringOption ("name", "john")), new OptionConsumer () {
+			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
+				throw new Exception ("Intentional Falure");
+			}
+		});
+
+		source.consume (Collections.singletonMap ("L_NAME", "John"));
 	}
 
 }

@@ -14,7 +14,16 @@ import org.tutske.lib.options.SimpleOptionSource;
 import org.tutske.lib.options.StoreChangeConsumer;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.AbstractExecutorService;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 public class OptionStoreTest {
@@ -216,6 +225,30 @@ public class OptionStoreTest {
 
 		verify (first, timeout (1000)).onValue (9);
 		verify (second, timeout (1000)).onValue (9);
+	}
+
+	@Test
+	public void it_should_submit_tasks_to_an_executor_service () {
+		SimpleOptionSource source = new SimpleOptionSource (consumer -> {});
+		ExecutorService executor = spy (new DirectExecutorService ());
+
+		OptionStore store = new ReplacingOptionStore (executor, options);
+		store.bind (source);
+		store.onValue (count, amount -> {});
+		source.source (count, 9);
+
+		verify (executor, timeout (1000)).submit ((Runnable) any ());
+	}
+
+	private static class DirectExecutorService extends AbstractExecutorService {
+		@Override public void shutdown () { }
+		@Override public List<Runnable> shutdownNow () { return Collections.emptyList (); }
+		@Override public boolean isShutdown () { return false; }
+		@Override public boolean isTerminated () { return false; }
+		@Override public boolean awaitTermination (long timeout, TimeUnit unit) { return false; }
+		@Override public void execute (Runnable command) {
+			command.run ();
+		}
 	}
 
 }
