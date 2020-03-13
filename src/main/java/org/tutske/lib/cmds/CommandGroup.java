@@ -119,17 +119,17 @@ public class CommandGroup {
 		return configs.get (command);
 	}
 
-	public void run (String [] args) {
-		run (Command.GLOBAL, args);
+	public <T> T run (String [] args) {
+		return run (Command.GLOBAL, args);
 	}
 
-	public void run (Command command, String [] args) {
-		initialize ().internalRun (command, new CommandStore (), args);
+	public <T> T run (Command command, String [] args) {
+		return initialize ().internalRun (command, new CommandStore (), args);
 	}
 
-	private void internalRun (Command command, CommandStore cmds, String [] args) {
+	private <T> T internalRun (Command command, CommandStore cmds, String [] args) {
 		CommandConfig config = configs.get (command);
-		if ( config == null ) { return; }
+		if ( config == null ) { return null; }
 
 		ArgumentOptionSource source = new ArgumentOptionSource ();
 		OptionStore store = createStore (config, source);
@@ -144,23 +144,23 @@ public class CommandGroup {
 		if ( tail.length > 1 ) { System.arraycopy (tail, 1, remaining, 0, remaining.length); }
 
 		Command sub = findSub (config.subs, cmd);
-		if ( sub == null ) { execute (command, cmds, tail); }
-		else { internalRun (sub, cmds, remaining); }
+		if ( sub == null ) { return execute (command, cmds, tail); }
+		else { return internalRun (sub, cmds, remaining); }
 	}
 
-	private void execute (Command command, CommandStore cmds, String [] tail) {
+	private <T> T execute (Command command, CommandStore cmds, String [] tail) {
 		CommandConfig cfg = configs.get (command);
-		while ( cfg != null && cfg.fn == null && cfg.parent != null ) {
+		while ( cfg.fn == null && cfg.parent != null ) {
 			cfg = configs.get (cfg.parent);
 		}
 
-		if ( cfg == null || cfg.fn == null ) {
+		if ( cfg.fn == null ) {
 			throw new RuntimeException ("Failed to find a command function for: " + command);
 		}
 
 		cmds.setMain (command);
 
-		try { cfg.fn.run (command, cmds, tail); }
+		try { return (T) cfg.fn.run (command, cmds, tail); }
 		catch ( Exception e ) { throw Exceptions.wrap (e); }
 	}
 
