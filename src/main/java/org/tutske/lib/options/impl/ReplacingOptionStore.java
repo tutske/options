@@ -9,7 +9,6 @@ import org.tutske.lib.options.OptionStore;
 import org.tutske.lib.utils.Exceptions;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
