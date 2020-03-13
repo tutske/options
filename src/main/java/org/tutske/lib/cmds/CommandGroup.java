@@ -27,6 +27,8 @@ public class CommandGroup {
 		private Command parent;
 		private Consumer<OptionStore> storeConfig;
 		private CmdFunction fn;
+		private CmdConsumer before;
+		private CmdConsumer after;
 		private Boolean fullScan;
 
 		public CommandConfig (Command current) {
@@ -52,6 +54,16 @@ public class CommandGroup {
 				fn.run (cmd, opts, tail);
 				return null;
 			});
+		}
+
+		public CommandConfig before (CmdConsumer fn) {
+			this.before = fn;
+			return this;
+		}
+
+		public CommandConfig after (CmdConsumer fn) {
+			this.after = fn;
+			return this;
 		}
 
 		public CommandConfig configureStore (Consumer<OptionStore> store) {
@@ -174,8 +186,25 @@ public class CommandGroup {
 
 		cmds.setMain (command);
 
-		try { return (T) cfg.fn.run (command, cmds, tail); }
+		try { return runMethods (command, cfg, cmds, tail); }
 		catch ( Exception e ) { throw Exceptions.wrap (e); }
+	}
+
+	private <T> T runMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		runPreMethods (command, cfg, opts, tail);
+		T value = (T) cfg.fn.run (command, opts, tail);
+		runPostMethods (command, cfg, opts, tail);
+		return value;
+	}
+
+	private void runPreMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		if ( cfg.parent != null ) { runPreMethods (command, configs.get (cfg.parent), opts, tail); }
+		if ( cfg.before != null ) { cfg.before.run (command, opts, tail); }
+	}
+
+	private void runPostMethods (Command command, CommandConfig cfg, CommandStore opts, String [] tail) throws Exception {
+		if ( cfg.after != null ) { cfg.after.run (command, opts, tail); }
+		if ( cfg.parent != null ) { runPostMethods (command, configs.get (cfg.parent), opts, tail); }
 	}
 
 	private CommandGroup initialize () {
@@ -184,11 +213,10 @@ public class CommandGroup {
 		}
 
 		if ( configs.get (Command.GLOBAL).subs.isEmpty () ) {
-			register (Command.GLOBAL, config -> {
-				configs.values ().stream ()
-					.filter (cfg -> cfg.parent == null && cfg.current != Command.GLOBAL)
-					.forEach (cfg -> config.subCommand (cfg.current));
-			});
+			register (Command.GLOBAL, config -> configs.values ().stream ()
+				.filter (cfg -> cfg.parent == null && cfg.current != Command.GLOBAL)
+				.forEach (cfg -> config.subCommand (cfg.current))
+			);
 		}
 
 		return this;
