@@ -42,13 +42,16 @@ public class CommandGroup {
 			return registerOptions (options);
 		}
 
-		public CommandConfig registerFn (CmdFunction fn) {
+		public CommandConfig fn (CmdFunction fn) {
 			this.fn = fn;
 			return this;
 		}
 
-		public CommandConfig fn (CmdFunction fn) {
-			return registerFn (fn);
+		public CommandConfig handle (CmdConsumer fn) {
+			return fn ((cmd, opts, tail) -> {
+				fn.run (cmd, opts, tail);
+				return null;
+			});
 		}
 
 		public CommandConfig configureStore (Consumer<OptionStore> store) {
@@ -99,8 +102,19 @@ public class CommandGroup {
 		return this;
 	}
 
+	public CommandGroup registerHandle (String command, CmdConsumer fn, Consumer<CommandConfig> config) {
+		return registerHandle (Command.get (command), fn, config);
+	}
+
 	public CommandGroup register (String command, CmdFunction<?> fn, Consumer<CommandConfig> config) {
 		return register (Command.get (command), fn, config);
+	}
+
+	public CommandGroup registerHandle (Command command, CmdConsumer fn, Consumer<CommandConfig> config) {
+		register (command);
+		configs.get (command).handle (fn);
+		config.accept (configs.get (command));
+		return this;
 	}
 
 	public CommandGroup register (Command command, CmdFunction<?> fn, Consumer<CommandConfig> config) {
