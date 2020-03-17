@@ -142,6 +142,18 @@ public class PropertyLineOptionSourceTest {
 		source.consume ("first");
 	}
 
+	@Test
+	public void it_should_use_arbitrary_separators () throws Exception {
+		Option<String> firstname = new Option.StringOption ("first name");
+		Option<String> lastname = new Option.StringOption ("last name");
+
+		PropertyLineOptionSource source = PropertyLineOptionSource.withSeparator (",");
+		source.subscribe (Utils.options (firstname, lastname), consumer);
+		source.consume ("first-name = John, last-name = Doe");
+
+		assertThat (findValue (firstname), is ("John"));
+	}
+
 	private <T> T findValue (Option<T> option) throws Exception {
 		return findValue (consumer, option);
 	}
