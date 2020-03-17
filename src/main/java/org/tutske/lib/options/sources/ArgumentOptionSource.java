@@ -1,7 +1,6 @@
 package org.tutske.lib.options.sources;
 
 import org.tutske.lib.options.Option;
-import org.tutske.lib.options.Option.*;
 import org.tutske.lib.options.OptionConsumer;
 import org.tutske.lib.options.OptionSource;
 import org.tutske.lib.options.impl.BaseOptionSource;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 public class ArgumentOptionSource extends BaseOptionSource implements OptionSource {
@@ -35,7 +33,7 @@ public class ArgumentOptionSource extends BaseOptionSource implements OptionSour
 
 	private String [] processOptions (OptionConsumer consumer, List<Option> options, String [] args, boolean skipUnknown) {
 		List<String> tail = new LinkedList<> ();
-		Map<String, Option> lookup = gatherOptions (options);
+		Map<String, Option> lookup = BaseOptionSource.gatherOptions (options);
 		Map<String, List<String>> gathered = new HashMap<> ();
 
 		for ( String arg : args ) {
@@ -57,61 +55,10 @@ public class ArgumentOptionSource extends BaseOptionSource implements OptionSour
 			else { tail.add (arg); }
 		}
 
-		notifyOptions (consumer, options, gathered);
+		BaseOptionSource.notifyOptions (consumer, options, gathered);
 
 		tail.remove ("--");
 		return tail.toArray (new String [] {});
-	}
-
-	private void notifyOptions (OptionConsumer consumer, List<Option> options, Map<String, List<String>> gathered) {
-		for ( Option option : options ) {
-			if ( option instanceof Option.BooleanOption ) { notifyBooleanOption (option, consumer, gathered); }
-			else { notifyNormalOption (option, consumer, gathered); }
-		}
-	}
-
-	private void notifyBooleanOption (Option option, OptionConsumer consumer, Map<String, List<String>> gathered) {
-		List<String> values = gathered.get (option.getName ());
-
-		boolean negated = values == null;
-
-		if ( values == null ) { values = gathered.get ("no " + option.getName ()); }
-		if ( values == null ) { values = gathered.get ("not " + option.getName ()); }
-		if ( values == null ) { values = gathered.get ("non " + option.getName ()); }
-
-		if ( values == null ) { return; }
-
-		notify (consumer, option, values.stream ()
-			.map (val -> negated ? (! (Boolean) option.parseValue (val)) : option.parseValue (val))
-			.collect(Collectors.toList ())
-		);
-	}
-
-	private void notifyNormalOption (Option option, OptionConsumer consumer, Map<String, List<String>> gathered) {
-		List<String> values = gathered.get (option.getName ());
-		if ( values == null ) { return; }
-		notify (consumer, option, values.stream ().map (val -> option.parseValue (val)).collect(Collectors.toList()));
-	}
-
-	private void notify (OptionConsumer consumer, Option option, List values) {
-		try { consumer.accept (option, values); }
-		catch ( Exception exception ) { throw Exceptions.wrap (exception); }
-	}
-
-	private Map<String, Option> gatherOptions (List<Option> options) {
-		Map<String, Option> gathered = new HashMap<> ();
-
-		for ( Option option : options ) {
-			gathered.put (option.getName (), option);
-
-			if ( ! (option instanceof BooleanOption) ) { continue; }
-
-			gathered.putIfAbsent ("no " + option.getName (), option);
-			gathered.putIfAbsent ("not " + option.getName (), option);
-			gathered.putIfAbsent ("non " + option.getName (), option);
-		}
-
-		return gathered;
 	}
 
 	private String extractName (String arg) {

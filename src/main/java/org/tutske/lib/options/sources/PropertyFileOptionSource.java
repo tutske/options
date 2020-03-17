@@ -12,7 +12,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -49,27 +50,25 @@ public class PropertyFileOptionSource extends BaseOptionSource implements Option
 		catch ( Exception e ) { throw Exceptions.wrap (e); }
 
 		for ( Map.Entry<OptionConsumer, List<Option>> entry : listeners.entrySet () ) {
-			for ( Option option : entry.getValue () ) {
-				String value = properties.getProperty (canonicalName (option));
-				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", "_")); }
-				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", "-")); }
-				if ( value == null ) { value = properties.getProperty (option.getName ().replace (" ", ".")); }
-				if ( value == null ) { value = properties.getProperty (option.getName ()); }
-
-				if ( value == null ) { continue; }
-
-				try { entry.getKey ().accept (option, values (option, value)); }
-				catch ( Exception e ) { throw Exceptions.wrap (e); }
-			}
+			try { processOptions (entry.getKey (), entry.getValue (), properties); }
+			catch ( Exception e ) { throw Exceptions.wrap (e); }
 		}
 	}
 
-	private List values (Option option, String value) {
-		return Collections.singletonList (option.parseValue (value));
+	private void processOptions (OptionConsumer consumer, List<Option> options, Properties properties) {
+		Map<String, List<String>> gathered = new HashMap<> ();
+		properties.forEach ((k, v) -> gathered
+			.computeIfAbsent (normalize (String.valueOf (k)), ignore -> new LinkedList<> ())
+			.add (String.valueOf (v))
+		);
+		BaseOptionSource.notifyOptions (consumer, options, gathered);
 	}
 
-	private String canonicalName (Option<?> option) {
-		return option.getName ().toUpperCase ().replace (" ", "_");
+	private String normalize (String name) {
+		return name
+			.toLowerCase ()
+			.replace ("_", " ")
+			.replaceAll ("-", " ");
 	}
 
 }

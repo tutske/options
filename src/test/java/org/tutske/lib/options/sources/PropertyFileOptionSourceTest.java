@@ -262,6 +262,23 @@ public class PropertyFileOptionSourceTest {
 		verify (consumer, times (1)).accept (eq (firstname), any ());
 	}
 
+	@Test (expected = Exception.class)
+	public void it_should_propagate_exceptions_from_the_consumer_when_consuming_paths () throws Exception {
+		Path path = Files.createTempFile ("example", ".properties");
+		path.toFile ().deleteOnExit ();
+		try ( OutputStream out = Files.newOutputStream (path) ) {
+			stream ("FIRST_NAME = john").transferTo (out);
+		}
+
+		source.subscribe (Utils.options (new Option.StringOption ("first name")), new OptionConsumer () {
+			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
+				throw new Exception ("Fail intentionally");
+			}
+		});
+
+		source.consume (path);
+	}
+
 	private InputStream stream (String ... content) {
 		return new ByteArrayInputStream (String.join ("\n", content).getBytes ());
 	}
