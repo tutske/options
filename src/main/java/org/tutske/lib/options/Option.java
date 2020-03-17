@@ -1,5 +1,7 @@
 package org.tutske.lib.options;
 
+import org.tutske.lib.options.sources.DefaultsOptionSource;
+import org.tutske.lib.options.sources.PropertyLineOptionSource;
 import org.tutske.lib.utils.PrimitivesParser;
 
 import java.net.URI;
@@ -209,6 +211,21 @@ public abstract class Option<T> {
 				case "y": case "year": case "years": return TimeUnit.DAYS.toNanos (amount * 365);
 				default: throw new RuntimeException ("Invalid duration unit: " + s);
 			}
+		}
+	}
+
+	public static class PropertiedOption extends BaseOption<OptionStore> {
+		public PropertiedOption (String name, Option<?> ... options) {
+			super (name, null, value -> parse (value, options));
+		}
+
+		private static OptionStore parse (String value, Option<?> ... options) {
+			OptionStore store = OptionStoreFactory.createNew (options);
+			PropertyLineOptionSource source = new PropertyLineOptionSource ();
+			store.bind (source);
+			store.bind (DefaultsOptionSource.instance);
+			source.consume (value);
+			return store;
 		}
 	}
 

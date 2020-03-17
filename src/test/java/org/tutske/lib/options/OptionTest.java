@@ -179,6 +179,30 @@ public class OptionTest {
 		new Option.EnumOption<> ("test", TestOption.values ()).parseValue (null);
 	}
 
+	@Test
+	public void it_should_parse_line_options_from_an_argument () {
+		Option<Path> path = new Option.PathOption ("path");
+		Option<String> mode = new Option.StringOption ("mode");
+
+		OptionStore opts = new Option.PropertiedOption ("", path, mode).parseValue (
+			"path=/tmp/test.ext mode=777"
+		);
+
+		assertThat (opts.get (path), is (Paths.get ("/tmp/test.ext")));
+		assertThat (opts.get (mode), is ("777"));
+	}
+
+	@Test
+	public void it_should_have_default_values_for_defaulted_options () {
+		Option<Path> path = new Option.PathOption ("path", "/tmp/test.ext");
+		Option<String> mode = new Option.StringOption ("mode", "777");
+
+		OptionStore opts = new Option.PropertiedOption ("", path, mode).parseValue ("");
+
+		assertThat (opts.get (path), is (Paths.get ("/tmp/test.ext")));
+		assertThat (opts.get (mode), is ("777"));
+	}
+
 	public static enum TestOption {
 		First, Second, Third;
 	}

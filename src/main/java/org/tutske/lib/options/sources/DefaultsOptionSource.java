@@ -11,6 +11,8 @@ import java.util.List;
 
 public class DefaultsOptionSource implements OptionSource {
 
+	public static final DefaultsOptionSource instance = new DefaultsOptionSource ();
+
 	@Override
 	public void subscribe (List<Option> options, OptionConsumer consumer) {
 		for ( Option option : options ) {
