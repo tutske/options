@@ -10,7 +10,7 @@ java.targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
 	implementation (
-		[ group: 'org.tutske.libs', name: 'org.tutske.libs.utils', version: '[a.3,)' ]
+		[ group: 'org.tutske.libs', name: 'org.tutske.libs.utils', version: '[a.3.3,)' ]
 	)
 	testImplementation (
 		[ group: 'junit', name: 'junit', version: '[1,)' ],
