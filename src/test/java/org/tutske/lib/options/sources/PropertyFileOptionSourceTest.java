@@ -3,9 +3,10 @@ package org.tutske.lib.options.sources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
@@ -174,24 +175,28 @@ public class PropertyFileOptionSourceTest {
 		verify (consumer, times (0)).accept (any (), any ());
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_properties_parsing () {
 		source.subscribe (Utils.options (new Option.StringOption ("first name")), consumer);
-		source.consume (new InputStream () {
-			@Override public int read () throws IOException {
-				throw new IOException ("Fail intentionally");
-			}
+		assertThrows (Exception.class, () -> {
+			source.consume (new InputStream () {
+				@Override public int read () throws IOException {
+					throw new IOException ("Fail intentionally");
+				}
+			});
 		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_options () {
 		source.subscribe (asList (new Option.StringOption ("name")), new OptionConsumer () {
 			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
 				throw new Exception ("Intentional Falure");
 			}
 		});
-		source.consume (stream ("NAME = jhon"));
+		assertThrows (Exception.class, () -> {
+			source.consume (stream ("NAME = jhon"));
+		});
 	}
 
 	@Test
@@ -254,15 +259,16 @@ public class PropertyFileOptionSourceTest {
 		verify (consumer, times (1)).accept (eq (firstname), any ());
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_failed_resource_loading () throws Exception {
 		Option<String> firstname = new Option.StringOption ("first name");
 		source.subscribe (Utils.options (firstname), consumer);
-		source.consume ("file://does-not-exist.properties");
-		verify (consumer, times (1)).accept (eq (firstname), any ());
+		assertThrows (Exception.class, () -> {
+			source.consume ("file://does-not-exist.properties");
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_the_consumer_when_consuming_paths () throws Exception {
 		Path path = Files.createTempFile ("example", ".properties");
 		path.toFile ().deleteOnExit ();
@@ -276,7 +282,9 @@ public class PropertyFileOptionSourceTest {
 			}
 		});
 
-		source.consume (path);
+		assertThrows (Exception.class, () -> {
+			source.consume (path);
+		});
 	}
 
 	private InputStream stream (String ... content) {

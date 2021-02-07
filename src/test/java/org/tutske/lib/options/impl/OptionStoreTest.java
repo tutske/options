@@ -2,9 +2,10 @@ package org.tutske.lib.options.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.Option.*;
@@ -160,51 +161,65 @@ public class OptionStoreTest {
 		verify (consumer, timeout (1000)).onValue (store, count, 9);
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_when_getting_the_value_of_an_unknown_option () {
 		OptionStore store = OptionStoreFactory.createNew (options);
-		store.get (new StringOption ("unknown"));
+		assertThrows (RuntimeException.class, () -> {
+			store.get (new StringOption ("unknown"));
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_when_getting_all_the_values_of_an_unknown_option () {
 		OptionStore store = OptionStoreFactory.createNew (options);
-		store.getAll (new StringOption ("unknonw"));
+		assertThrows (RuntimeException.class, () -> {
+			store.getAll (new StringOption ("unknonw"));
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_when_listening_for_values_on_an_unknown_option () {
 		OptionStore store = OptionStoreFactory.createNew (options);
-		store.onValue (new StringOption ("unknonw"), value -> {});
+		assertThrows (RuntimeException.class, () -> {
+			store.onValue (new StringOption ("unknonw"), value -> {});
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_when_listening_for_a_list_of_values_on_an_unknown_option () {
 		OptionStore store = OptionStoreFactory.createNew (options);
-		store.onValues (new StringOption ("unknonw"), values -> {});
+		assertThrows (RuntimeException.class, () -> {
+			store.onValues (new StringOption ("unknonw"), values -> {});
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_when_a_source_sets_an_option_that_does_not_exist () {
-		OptionStoreFactory.createNew (options, new SimpleOptionSource (
-			consumer -> consumer.accept (new StringOption ("unknown"), Arrays.asList ("unknown"))
-		));
+		assertThrows (RuntimeException.class, () -> {
+			OptionStoreFactory.createNew (options, new SimpleOptionSource (
+				consumer -> consumer.accept (new StringOption ("unknown"), Arrays.asList ("unknown"))
+			));
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void should_complain_when_multiple_options_have_the_same_name () {
-		OptionStoreFactory.createNew (
-			new StringOption ("test"),
-			new StringOption ("test")
-		);
+		assertThrows (RuntimeException.class, () -> {
+			OptionStoreFactory.createNew (
+				new StringOption ("test"),
+				new StringOption ("test")
+			);
+		});
 	}
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void should_complain_when_multiple_options_have_the_same_name_with_source () {
-		OptionStoreFactory.createNew (
-			new Option [] { new StringOption ("test"), new StringOption ("test") },
-			new SimpleOptionSource (consumer -> {})
-		);
+		assertThrows (RuntimeException.class, () -> {
+			OptionStoreFactory.createNew (
+				new Option [] { new StringOption ("test"), new StringOption ("test") },
+				new SimpleOptionSource (consumer -> {})
+			);
+		});
 	}
 
 	@Test

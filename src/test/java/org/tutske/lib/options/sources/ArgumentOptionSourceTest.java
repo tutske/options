@@ -3,10 +3,12 @@ package org.tutske.lib.options.sources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import org.hamcrest.Matcher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
@@ -158,13 +160,15 @@ public class ArgumentOptionSourceTest {
 		verify (consumer, times (0)).accept (any (), any ());
 	}
 
-	@Test (expected = NumberFormatException.class)
+	@Test
 	public void it_should_propagate_exceptions_from_parsing () {
 		source.subscribe (asList (new Option.LongOption ("age")), consumer);
-		source.consume (new String [] { "--age=abc" });
+		assertThrows (NumberFormatException.class, () -> {
+			source.consume (new String [] { "--age=abc" });
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_consumers () {
 		Option<String> name = new Option.StringOption ("name");
 		source.subscribe (asList (name), new OptionConsumer () {
@@ -172,7 +176,9 @@ public class ArgumentOptionSourceTest {
 				throw new Exception ("Intentional Falure");
 			}
 		});
-		source.consume (new String [] { "--name=john"});
+		assertThrows (Exception.class, () -> {
+			source.consume (new String[] { "--name=john" });
+		});
 	}
 
 }

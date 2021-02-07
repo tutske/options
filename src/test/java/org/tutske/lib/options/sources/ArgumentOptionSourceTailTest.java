@@ -3,10 +3,11 @@ package org.tutske.lib.options.sources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.tutske.lib.options.Utils.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.Option.*;
 import org.tutske.lib.options.OptionConsumer;
@@ -17,12 +18,14 @@ public class ArgumentOptionSourceTailTest {
 	private OptionConsumer consumer = mock (OptionConsumer.class);
 	private ArgumentOptionSource source = new ArgumentOptionSource ();
 
-	@Test (expected = RuntimeException.class)
+	@Test
 	public void it_should_complain_on_consume_with_tail_with_multiple_listeners () {
 		source.subscribe (asList (new StringOption ("name")), createConsumer ());
 		source.subscribe (asList (new StringOption ("name")), createConsumer ());
 
-		source.consumeTailed (new String [] { "--", "--name=john" });
+		assertThrows (RuntimeException.class, () -> {
+			source.consumeTailed (new String [] { "--", "--name=john" });
+		});
 	}
 
 	@Test

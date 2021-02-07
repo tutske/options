@@ -2,7 +2,9 @@ package org.tutske.lib.options;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -84,14 +86,18 @@ public class OptionTest {
 		));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should__complain_when_providing_too_many_duration_parts () {
-		new Option.DurationOption ("").parseValue ("2:00:00:00");
+		assertThrows (Exception.class, () -> {
+			new Option.DurationOption ("").parseValue ("2:00:00:00");
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should__complain_when_providing_too_few_duration_parts () {
-		new Option.DurationOption ("").parseValue ("2");
+		assertThrows (Exception.class, () -> {
+			new Option.DurationOption ("").parseValue ("2");
+		});
 	}
 
 	@Test
@@ -169,14 +175,18 @@ public class OptionTest {
 		assertThat (option.getDefault (), is (TestOption.Second));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_not_representing_a_value_of_the_enum () throws Exception {
-		new Option.EnumOption<> ("test", TestOption.values ()).parseValue ("DOES_NOT_EXIST");
+		assertThrows (Exception.class, () -> {
+			new Option.EnumOption<> ("test", TestOption.values ()).parseValue ("DOES_NOT_EXIST");
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_parsing_nulls () {
-		new Option.EnumOption<> ("test", TestOption.values ()).parseValue (null);
+		assertThrows (Exception.class, () -> {
+			new Option.EnumOption<> ("test", TestOption.values ()).parseValue (null);
+		});
 	}
 
 	@Test

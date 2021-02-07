@@ -2,10 +2,11 @@ package org.tutske.lib.options.sources;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.eq;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
@@ -125,21 +126,25 @@ public class PropertyLineOptionSourceTest {
 		verify (consumer, times (0)).accept (eq (first), any ());
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_the_option_is_not_known () {
 		Option<Boolean> first = new Option.BooleanOption ("first");
 		source.subscribe (Utils.options (first), consumer);
-		source.consume ("no-first does-not-exist");
+		assertThrows (Exception.class, () -> {
+			source.consume ("no-first does-not-exist");
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_the_consumer () throws Exception {
 		source.subscribe (Utils.options (new Option.BooleanOption ("first")), new OptionConsumer () {
 			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
 				throw new Exception ("Fail intentionally");
 			}
 		});
-		source.consume ("first");
+		assertThrows (Exception.class, () -> {
+			source.consume ("first");
+		});
 	}
 
 	@Test

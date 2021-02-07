@@ -3,10 +3,11 @@ package org.tutske.lib.options.sources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.tutske.lib.options.Utils.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionConsumer;
@@ -132,7 +133,7 @@ public class EnvironmentOptionSourceTest {
 		verify (consumer, times (1)).accept (eq (firstname), any ());
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_consumers () {
 		source.subscribe (asList (new Option.StringOption ("name", "john")), new OptionConsumer () {
 			@Override public <T> void accept (Option<T> option, List<T> values) throws Exception {
@@ -140,7 +141,9 @@ public class EnvironmentOptionSourceTest {
 			}
 		});
 
-		source.consume (Collections.singletonMap ("L_NAME", "John"));
+		assertThrows (Exception.class, () -> {
+			source.consume (Collections.singletonMap ("L_NAME", "John"));
+		});
 	}
 
 }

@@ -2,12 +2,15 @@ package org.tutske.lib.cmds;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.SimpleOptionSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
@@ -50,12 +53,14 @@ public class CommandGroupTest {
 		assertThat (result, nullValue ());
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_propagate_exceptions_from_the_command_function () {
 		store.configure (Command.GLOBAL).fn ((cmd, opts, tail) -> {
 			throw new RuntimeException ("Intentionally fail");
 		});
-		store.run (new String [] {});
+		assertThrows (Exception.class, () -> {
+			store.run (new String [] {});
+		});
 	}
 
 	@Test
@@ -168,15 +173,17 @@ public class CommandGroupTest {
 		assertThat (captor.getValue ().get (Command.GLOBAL, verbose), is (true));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_fail_when_adding_a_command_as_a_sub_twice () {
 		Command start_one = Command.create ("start-one");
 		Command start_two = Command.create ("start-two");
 		Command sub = Command.create ("sub");
 
-		store
-			.register (start_one, config -> config.subCommand (sub))
-			.register (start_two, config -> config.subCommand (sub));
+		store.register (start_one, config -> config.subCommand (sub));
+
+		assertThrows (Exception.class, () -> {
+			store.register (start_two, config -> config.subCommand (sub));
+		});
 	}
 
 	@Test
@@ -227,10 +234,12 @@ public class CommandGroupTest {
 		assertThat (captor.getValue ().has (name), is (false));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_runing_without_a_registered_handler () {
 		store.register ("start").register ("middle").register ("deep");
-		store.run (new String [] { "start", "middle", "deep"});
+		assertThrows (Exception.class, () -> {
+			store.run (new String[] { "start", "middle", "deep" });
+		});
 	}
 
 	@Test

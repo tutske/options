@@ -2,11 +2,12 @@ package org.tutske.lib.cmds;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.tutske.lib.options.Option.*;
 import static org.tutske.lib.options.SimpleOptionSource.source;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.tutske.lib.options.Option;
 import org.tutske.lib.options.OptionStore;
 import org.tutske.lib.options.OptionStoreFactory;
@@ -32,18 +33,23 @@ public class CommandStoreTest {
 		assertThat (store.optionStore (cmd), is (opts));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_a_command_already_has_a_store_associated () {
 		Command cmd = Command.create ("run");
 
 		store.addStore (cmd, OptionStoreFactory.createNew ());
-		store.addStore (cmd, OptionStoreFactory.createNew ());
+
+		assertThrows (Exception.class, () -> {
+			store.addStore (cmd, OptionStoreFactory.createNew ());
+		});
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_asking_for_a_store_with_an_unknown_command () {
 		Command cmd = Command.create ("run");
-		store.optionStore (cmd);
+		assertThrows (Exception.class, () -> {
+			store.optionStore (cmd);
+		});
 	}
 
 	@Test
@@ -129,7 +135,7 @@ public class CommandStoreTest {
 		assertThat (store.get (name), is ("John"));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_getting_an_option_not_known_by_the_main_command () {
 		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
 			consumer -> consumer.accept (verbose, Arrays.asList (true)))
@@ -141,7 +147,9 @@ public class CommandStoreTest {
 
 		store.setMain (Command.get ("run"));
 
-		store.get (verbose);
+		assertThrows (Exception.class, () -> {
+			store.get (verbose);
+		});
 	}
 
 	@Test
@@ -159,7 +167,7 @@ public class CommandStoreTest {
 		assertThat (store.get (Command.GLOBAL, verbose), is (true));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_getting_an_option_not_known_by_the_specified_command () {
 		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
 			consumer -> consumer.accept (verbose, Arrays.asList (true)))
@@ -171,7 +179,9 @@ public class CommandStoreTest {
 
 		store.setMain (Command.get ("run"));
 
-		store.get (Command.GLOBAL, name);
+		assertThrows (Exception.class, () -> {
+			store.get (Command.GLOBAL, name);
+		});
 	}
 
 	@Test
@@ -190,10 +200,12 @@ public class CommandStoreTest {
 		assertThat (store.find (name), is ("John"));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_finding_the_values_of_an_option_that_is_not_known_by_any_associated_store () {
 		store.addStore (Command.get ("run"), OptionStoreFactory.createNew (name));
-		store.find (age);
+		assertThrows (Exception.class, () -> {
+			store.find (age);
+		});
 	}
 
 	/* -- getting all -- */
@@ -213,7 +225,7 @@ public class CommandStoreTest {
 		assertThat (store.getAll (name), contains ("John", "Jane"));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_getting_all_values_for_an_option_not_known_by_the_main_command () {
 		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
 			consumer -> consumer.accept (verbose, Arrays.asList (true, false)))
@@ -225,7 +237,9 @@ public class CommandStoreTest {
 
 		store.setMain (Command.get ("run"));
 
-		store.getAll (verbose);
+		assertThrows (Exception.class, () -> {
+			store.getAll (verbose);
+		});
 	}
 
 	@Test
@@ -243,7 +257,7 @@ public class CommandStoreTest {
 		assertThat (store.getAll (Command.GLOBAL, verbose), contains (true, false));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_getting_all_values_of_an_option_not_known_by_the_specified_command () {
 		store.addStore (Command.GLOBAL, OptionStoreFactory.createNew (new Option [] { verbose }, source (
 			consumer -> consumer.accept (verbose, Arrays.asList (true, false)))
@@ -255,7 +269,9 @@ public class CommandStoreTest {
 
 		store.setMain (Command.get ("run"));
 
-		store.getAll (Command.GLOBAL, name);
+		assertThrows (Exception.class, () -> {
+			store.getAll (Command.GLOBAL, name);
+		});
 	}
 
 	@Test
@@ -274,10 +290,12 @@ public class CommandStoreTest {
 		assertThat (store.findAll (name), contains ("John", "Jane"));
 	}
 
-	@Test (expected = Exception.class)
+	@Test
 	public void it_should_complain_when_finding_all_values_of_an_option_that_is_not_known_by_any_associated_store () {
 		store.addStore (Command.get ("run"), OptionStoreFactory.createNew (name));
-		store.findAll (age);
+		assertThrows (Exception.class, () -> {
+			store.findAll (age);
+		});
 	}
 
 	@Test
