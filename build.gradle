@@ -4,6 +4,8 @@ plugins {
 
 group = 'org.tutske.libs'
 
+jacoco.toolVersion = '0.8.6'
+
 dependencies {
 	implementation (
 		[ group: 'org.tutske.libs', name: 'org.tutske.libs.utils', version: '[a.3,)' ]
